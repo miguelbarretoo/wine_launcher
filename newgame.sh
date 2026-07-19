@@ -1,91 +1,57 @@
 #!/bin/bash
-
 # newgame.sh
-# Criador de launcher Wine estilo Steam
-
+# Steam-style Wine launcher creator
 if [ $# -lt 2 ]; then
-    echo "Uso:"
-    echo "./newgame.sh <pasta_do_jogo> <icone.png>"
+    echo "Usage:"
+    echo "./newgame.sh <game_folder> <icon.png>"
     exit 1
 fi
-
-
 GAME_DIR="$(realpath "$1")"
 ICON="$(realpath "$2")"
-
-# ID baseado no nome da pasta
+# ID based on the folder name
 FOLDER_NAME=$(basename "$GAME_DIR")
-
 GAME_ID=$(echo "$FOLDER_NAME" | tr ' ' '_' | tr -cd '[:alnum:]_')
-
-
 echo ""
 echo "=============================="
-echo " Novo jogo Wine"
+echo " New Wine game"
 echo "=============================="
 echo ""
-
-read -p "Nome do jogo: " GAME_NAME
-
+read -p "Game name: " GAME_NAME
 if [ -z "$GAME_NAME" ]; then
-    echo "Nome inválido!"
+    echo "Invalid name!"
     exit 1
 fi
-
-
 echo ""
-echo "Executáveis encontrados:"
+echo "Executables found:"
 find "$GAME_DIR" -maxdepth 1 -iname "*.exe" -printf " - %f\n"
-
 echo ""
-
-read -p "Nome do executável (.exe): " GAME_EXE
-
-
+read -p "Executable name (.exe): " GAME_EXE
 if [ -z "$GAME_EXE" ]; then
-    echo "Executável inválido!"
+    echo "Invalid executable!"
     exit 1
 fi
-
-
 PREFIX="$HOME/Joguitos/.tools/prefix"
-
 LAUNCHER="$GAME_DIR/run.sh"
-
 DESKTOP="$HOME/.local/share/applications/$GAME_ID.desktop"
-
-
 WINE="$HOME/Joguitos/.tools/wine/Wine-GE-latest/bin/wine"
-
-
 echo ""
-echo "Criando:"
-echo "Nome: $GAME_NAME"
+echo "Creating:"
+echo "Name: $GAME_NAME"
 echo "ID: $GAME_ID"
 echo "EXE: $GAME_EXE"
 echo ""
-
-# cria launcher
+# create launcher
 cat > "$LAUNCHER" <<EOF
 #!/bin/bash
-
 GAME_DIR="$GAME_DIR"
-
 cd "\$GAME_DIR" || exit 1
-
-
 gamemoderun env \\
 WINEDLLOVERRIDES="d3d11,dxgi=n" \\
 WINEPREFIX="$PREFIX" \\
 "$WINE" "$GAME_EXE"
 EOF
-
-
 chmod +x "$LAUNCHER"
-
-
-
-# cria atalho
+# create shortcut
 cat > "$DESKTOP" <<EOF
 [Desktop Entry]
 Name=$GAME_NAME
@@ -97,18 +63,11 @@ Type=Application
 Categories=Game;
 StartupNotify=true
 EOF
-
-
 chmod +x "$DESKTOP"
-
-
 update-desktop-database ~/.local/share/applications 2>/dev/null
-
-
-
 echo ""
 echo "================================"
-echo " Jogo criado com sucesso!"
+echo " Game created successfully!"
 echo "================================"
 echo ""
 echo "🎮 $GAME_NAME"
