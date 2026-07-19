@@ -8,6 +8,7 @@ if [ $# -lt 2 ]; then
 fi
 GAME_DIR="$(realpath "$1")"
 ICON="$(realpath "$2")"
+SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 # ID based on the folder name
 FOLDER_NAME=$(basename "$GAME_DIR")
 GAME_ID=$(echo "$FOLDER_NAME" | tr ' ' '_' | tr -cd '[:alnum:]_')
@@ -30,16 +31,25 @@ if [ -z "$GAME_EXE" ]; then
     echo "Invalid executable!"
     exit 1
 fi
-PREFIX="$HOME/Joguitos/.tools/prefix"
+PREFIX="$SCRIPT_DIR/.tools/prefix"
 LAUNCHER="$GAME_DIR/run.sh"
 DESKTOP="$HOME/.local/share/applications/$GAME_ID.desktop"
-WINE="$HOME/Joguitos/.tools/wine/Wine-GE-latest/bin/wine"
+WINE="$SCRIPT_DIR/.tools/wine/Wine-GE-latest/bin/wine"
 echo ""
 echo "Creating:"
 echo "Name: $GAME_NAME"
 echo "ID: $GAME_ID"
 echo "EXE: $GAME_EXE"
 echo ""
+# first run: create the prefix if it doesn't exist yet
+if [ ! -d "$PREFIX" ]; then
+    echo "Prefix not found, creating a new one at:"
+    echo "$PREFIX"
+    mkdir -p "$PREFIX"
+    WINEPREFIX="$PREFIX" "$WINE" wineboot --init
+    echo "Prefix created."
+    echo ""
+fi
 # create launcher
 cat > "$LAUNCHER" <<EOF
 #!/bin/bash
